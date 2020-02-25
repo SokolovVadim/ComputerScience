@@ -1,0 +1,2 @@
+all:
+	gcc Client.c ShMem.c -o client -Wall

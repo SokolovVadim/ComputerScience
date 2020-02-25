@@ -1,0 +1,241 @@
+        -:    0:Source:../src/hash.c
+        -:    0:Graph:hash.gcno
+        -:    0:Data:hash.gcda
+        -:    0:Runs:6
+        -:    0:Programs:1
+        -:    1:#include "../include/hash.h"
+        -:    2:
+        -:    3:
+        -:    4:/* \brief only for DEBUG
+        -:    5:* calls free if ptr is not NULL
+        -:    6:* returns -1 if ptr is NULL
+        -:    7:*/
+        -:    8:
+ 12541522:    9:int mfree(void* ptr)
+        -:   10:{
+ 12541522:   11:	if(ptr == NULL)
+        -:   12:	{
+        -:   13:		// printf("m_free: NULL ptr\n");
+     6009:   14:		return -1;
+        -:   15:	}
+        -:   16:	// printf("free: %p\n", ptr);
+ 12535513:   17:	free(ptr);
+ 12535513:   18:	return 0;
+        -:   19:}
+        -:   20:
+        -:   21:
+        -:   22:/*
+        -:   23:* return value:
+        -:   24:* NULL if fail, ptr if success
+        -:   25:* has a random generated probability of fail ()
+        -:   26:* before call this function you must call srand()
+        -:   27:*/
+        -:   28:
+        -:   29:
+ 12753950:   30:void* emalloc(size_t size)
+        -:   31:{
+ 12753950:   32:	if(size <= 0)
+        -:   33:	{
+     3072:   34:		return NULL;
+        -:   35:	}
+        -:   36:	//srand(time(NULL));
+ 12750878:   37:	int rand_key = rand() % RAND_MAX_SIZE;
+        -:   38:	// printf("rand_key = %d\n", rand_key);
+ 12750878:   39:	if(rand_key < RAND_PROB)
+        -:   40:	{
+        -:   41:		// printf("Can not allocate memory!\n");
+   215365:   42:		return NULL;
+        -:   43:	}
+        -:   44:
+ 12535513:   45:	void *p = calloc(1, size);
+        -:   46:	// printf("allocation: %p[%ld]\n", p, size);
+        -:   47:	
+        -:   48:	/*
+        -:   49:	if(p == NULL)
+        -:   50:	{
+        -:   51:		perror("calloc");
+        -:   52:		printf("Memory allocation failed!\n");
+        -:   53:		return NULL;
+        -:   54:	}
+        -:   55:	*/
+        -:   56:	
+ 12535513:   57:	return p;
+        -:   58:}
+        -:   59:
+        -:   60:// ---------------------------------------------------
+        -:   61:
+   307200:   62:HashTable* init_hash_table(size_t size)
+        -:   63:{
+   307200:   64:	srand(time(NULL));
+        -:   65:	// printf("sizeof(*HT) = %ld", sizeof(HashTable));
+   307200:   66:	HashTable *HT = (HashTable*)emalloc(sizeof(*HT));
+   307200:   67:	if(HT == NULL)
+        -:   68:	{
+        -:   69:		// DEBUG_PRINT();
+    #####:   70:		return NULL;
+        -:   71:	}
+   307200:   72:	HT->size_  = size;
+        -:   73:	// printf("%ld\n", sizeof(Nameval));
+   307200:   74:	HT->symtab = (Nameval**)emalloc(size * sizeof(Nameval*));
+   307200:   75:	if(HT->symtab == NULL)
+        -:   76:	{
+        -:   77:		// DEBUG_PRINT();
+        -:   78:		
+     1536:   79:		mfree(HT->symtab);
+     1536:   80:		mfree(HT);
+     1536:   81:		return NULL;
+        -:   82:	}
+        -:   83:	//Nameval* node = NULL;
+        -:   84:
+        -:   85:	
+   305664:   86:	size_t i = 0;
+ 11876576:   87:	for(i = 0; i < HT->size_; ++i)
+        -:   88:	{
+ 11783340:   89:		HT->symtab[i] = (Nameval*)emalloc(sizeof(Nameval)); // 
+ 11783340:   90:		if(HT->symtab[i] == NULL)
+        -:   91:		{
+        -:   92:			// DEBUG_PRINT();
+   212428:   93:			clear_hash_table(HT);
+   212428:   94:			return NULL;
+        -:   95:		}
+        -:   96:		
+ 11570912:   97:		HT->symtab[i]->next = NULL;
+        -:   98:	}
+        -:   99:	
+    93236:  100:	return HT;
+        -:  101:}
+        -:  102:
+        -:  103:
+        -:  104:// ---------------------------------------------------
+        -:  105:
+        -:  106://! do not use this function with NULL ptrs
+        -:  107://! call function in clear_hash_table
+        -:  108:
+ 11618386:  109:int clear_list(Nameval* sym)
+        -:  110:{
+ 11618386:  111:	assert(sym);
+        -:  112:
+ 11618386:  113:	if(sym->next != NULL)
+    47474:  114:		clear_list(sym->next);
+        -:  115:	// DEBUG_PRINT();
+ 11618386:  116:	mfree(sym);
+        -:  117:
+ 11618386:  118:	return 0;
+        -:  119:}
+        -:  120:
+        -:  121:// ---------------------------------------------------
+        -:  122:
+        -:  123:/*
+        -:  124:* calls free for HT
+        -:  125:* return value: 0 if success
+        -:  126:* 
+        -:  127:*/
+        -:  128:
+        -:  129:// ---------------------------------------------------
+        -:  130:
+   521164:  131:int clear_hash_table(HashTable* HT)
+        -:  132:{
+   521164:  133:	if(HT == NULL)
+        -:  134:	{
+        -:  135:		// DEBUG_PRINT();
+        -:  136:		// printf("Null ptr!\n");
+   215500:  137:		return NULL_E;
+        -:  138:	}
+   305664:  139:	Nameval** symtab = HT->symtab;
+        -:  140:	
+   305664:  141:	size_t i = 0;
+ 23268864:  142:	for(i = 0; i < HT->size_; ++i)
+        -:  143:	{
+ 22963200:  144:		if(symtab[i] == NULL)
+        -:  145:		{
+        -:  146:			// printf("Null ptr!\n");
+        -:  147:			//return NULL_E;
+        -:  148:		}
+        -:  149:		else
+        -:  150:		{
+ 11570912:  151:			clear_list(symtab[i]);
+        -:  152:		}
+        -:  153:	}
+   305664:  154:	mfree(HT->symtab);
+   305664:  155:	mfree(HT);
+   305664:  156:	return 0;
+        -:  157:}
+        -:  158:
+        -:  159:// ---------------------------------------------------
+        -:  160:
+    25273:  161:uint32_t gnu_hash(const char *s)
+        -:  162:{
+    25273:  163:	if(s == NULL)
+     1536:  164:		return -1;
+    23737:  165:    uint32_t h = 5381;
+        -:  166:
+   189896:  167:    for (unsigned char c = *s; c != '\0'; c = *++s)
+   166159:  168:        h = ((h << 5) + h) + c;
+        -:  169:
+    23737:  170:    return h % NHASH;
+        -:  171:}
+        -:  172:
+        -:  173:// ---------------------------------------------------
+        -:  174:/*
+        -:  175:* return elem with specified name if create == 1
+        -:  176:* return NULL if error
+        -:  177:*/
+        -:  178:
+    47474:  179:Nameval* add_elem(Nameval** symtab, Nameval* sym, char* name, size_t h)
+        -:  180:{
+    47474:  181:	sym = (Nameval*)emalloc(sizeof(*sym));
+    47474:  182:	if(sym == NULL)
+    #####:  183:		return NULL;
+        -:  184:	
+    47474:  185:	sym->name = name;
+    47474:  186:	sym->next = symtab[h];
+    47474:  187:	sym->prev = NULL; /// !!!!!!!!!!!!!!!!!!
+    47474:  188:	symtab[h] = sym;
+        -:  189:	
+    47474:  190:	return sym;
+        -:  191:}
+        -:  192:
+        -:  193:
+        -:  194:/*! \brief find elem and return the ptr
+        -:  195:* This function can insert elems into HT,
+        -:  196:* If there are no collisions
+        -:  197:*
+        -:  198:*/
+        -:  199:
+   155136:  200:Nameval * lookup(char* name, int create, HashTable* HT)
+        -:  201:{
+        -:  202:	// DEBUG_PRINT();
+   155136:  203:	if(name == NULL)
+     1536:  204:		return NULL;
+        -:  205:	// DEBUG_PRINT();
+   153600:  206:	if(HT == NULL)
+   129863:  207:		return NULL;
+        -:  208:
+    23737:  209:	int h = gnu_hash(name);
+        -:  210:
+    23737:  211:	Nameval* sym = NULL;
+    23737:  212:	Nameval** symtab = HT->symtab;
+        -:  213:	
+    71211:  214:	for(sym = symtab[h]; sym != NULL; sym = sym->next)
+        -:  215:	{
+        -:  216:		
+        -:  217:		// printf("sym = %p\nsym->name = %p\nsym->next = %p\n", sym, sym->name, sym->next);
+    71211:  218:		if( (sym->name) && (strcmp(name, sym->name) == 0) )
+        -:  219:		{
+    23737:  220:			return sym;
+        -:  221:		}
+        -:  222:		// DEBUG_PRINT();
+    47474:  223:		if(create)
+        -:  224:		{
+    47474:  225:			sym = add_elem(symtab, sym, name, h);
+        -:  226:		}
+        -:  227:	}
+    #####:  228:	return sym;
+        -:  229:}
+        -:  230:
+        -:  231:
+        -:  232:
+        -:  233:
+        -:  234:
+        -:  235:
+        -:  236:	

@@ -1,0 +1,41 @@
+			LETTER_CASE('A', ".-");
+			LETTER_CASE('B', "-...");
+			LETTER_CASE('C', "-.-.");
+			LETTER_CASE('D', "-..");
+			LETTER_CASE('E', ".");
+			LETTER_CASE('F', "..-.");
+			LETTER_CASE('G', "--.");
+			LETTER_CASE('H', "....");
+			LETTER_CASE('I', "..");
+			LETTER_CASE('J', ".---");
+			LETTER_CASE('K', "-.-");
+			LETTER_CASE('L', ".-..");
+			LETTER_CASE('M', "--");
+			LETTER_CASE('N', "-.");
+			LETTER_CASE('O', "---");
+			LETTER_CASE('P', ".--.");
+			LETTER_CASE('Q', "--.-");
+			LETTER_CASE('R', ".-.");
+			LETTER_CASE('S', "...");
+			LETTER_CASE('T', "-");
+			LETTER_CASE('U', "..-");
+			LETTER_CASE('V', "...-");
+			LETTER_CASE('W', ".--");
+			LETTER_CASE('X', "-..-");
+			LETTER_CASE('Y', "-.--");
+			LETTER_CASE('Z', "--..");
+
+			LETTER_CASE('.', ".-.-.-");
+			LETTER_CASE(',', "--..--");
+			LETTER_CASE('?', "..--..");
+			LETTER_CASE('\'', ".----.");
+			LETTER_CASE('!', "-.-.--");
+			LETTER_CASE('/', "-..-.");
+			LETTER_CASE('(', "-.--.");
+			LETTER_CASE(')', "-.--.-");
+			LETTER_CASE('&', ".-...");
+			LETTER_CASE(':', "---...");
+			LETTER_CASE(';', "-.-.-.");
+			
+			LETTER_CASE(' ', " ");
+

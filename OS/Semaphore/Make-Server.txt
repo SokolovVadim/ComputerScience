@@ -1,0 +1,2 @@
+all:
+	gcc Server.c ShMem.c -o server -Wall

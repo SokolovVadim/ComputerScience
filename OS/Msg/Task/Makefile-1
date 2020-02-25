@@ -1,0 +1,4 @@
+all:
+	gcc main.c Message.c Msg.h -o msg -Wall -O0
+clean:
+	

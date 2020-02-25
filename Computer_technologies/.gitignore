@@ -1,0 +1,10 @@
+# all object files
+*.o
+# gcov special files
+*.gcno
+# binary files
+run
+# d-files
+*.d
+# txt-files
+*.txt

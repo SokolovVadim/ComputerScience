@@ -1,0 +1,387 @@
+        -:    0:Source:../src/test.c
+        -:    0:Graph:test.gcno
+        -:    0:Data:test.gcda
+        -:    0:Runs:2
+        -:    0:Programs:1
+        -:    1:#include "../include/hash.h"
+        -:    2:
+        -:    3:
+        -:    4://! returns FD of file_name
+        -:    5://! fd must be closed after calling this function
+        -:    6:
+    #####:    7:int open_file(const char* file_name)
+        -:    8:{
+    #####:    9:	int fd = open(file_name, O_RDONLY);
+    #####:   10:	if(fd < 0)
+        -:   11:	{
+    #####:   12:		perror("open");
+    #####:   13:		return -1;
+        -:   14:	}
+        -:   15:
+    #####:   16:	return fd;
+        -:   17:}
+        -:   18:
+    #####:   19:size_t sizeof_file(char* filename)
+        -:   20:{
+        -:   21:	struct stat sb;
+    #####:   22:	if( stat(filename, &sb) < 0)
+        -:   23:	{
+    #####:   24:		perror("stat");
+    #####:   25:		return -1;
+        -:   26:	}
+        -:   27:	// printf("stat res: size = %ld\n", sb.st_size);
+    #####:   28:	return sb.st_size;
+        -:   29:}
+        -:   30:
+    #####:   31:int read_file(const int fd, const size_t file_size, char* buffer)
+        -:   32:{
+    #####:   33:	int read_number = read(fd, buffer, file_size);
+    #####:   34:	if(read_number < 0)
+        -:   35:	{
+    #####:   36:		perror("read");
+    #####:   37:		return -1;
+        -:   38:	}
+        -:   39:	// buffer[file_size-1] = '\0';
+        -:   40:	// printf("read_number = %d\n", read_number);
+    #####:   41:	return read_number;
+        -:   42:}
+        -:   43:
+    #####:   44:size_t count_words(char* buffer, const size_t file_size)
+        -:   45:{
+    #####:   46:	size_t i = 0;
+    #####:   47:	size_t count_words = 0;
+    #####:   48:	for(i = 0; i < file_size; ++i)
+        -:   49:	{
+    #####:   50:		char c = buffer[i];
+    #####:   51:		if(ispunct(c) || isspace(c) || (c == '\n'))
+        -:   52:		{
+    #####:   53:			buffer[i] = '\0';
+    #####:   54:			count_words++;
+        -:   55:		}
+        -:   56:	}
+        -:   57:
+    #####:   58:	return count_words - 1; // except '\0' at the end of file
+        -:   59:}
+        -:   60:
+    #####:   61:int put_in_array(char* buffer, char** ptr_buffer, size_t file_size)
+        -:   62:{
+        -:   63:	// printf("%s\n", buffer);
+    #####:   64:	size_t count_words = 1; // first symbol is the beginning of data
+    #####:   65:	size_t i = 0;
+    #####:   66:	if(ptr_buffer == NULL)
+    #####:   67:		return -1;
+    #####:   68:	ptr_buffer[0] = buffer;
+    #####:   69:	for(i = 0; i < file_size - 10; ++i) // \r\0
+        -:   70:	{
+    #####:   71:		char c = buffer[i];
+    #####:   72:		if(c == '\0')
+        -:   73:		{
+    #####:   74:			ptr_buffer[count_words] = &buffer[i + 1];
+        -:   75:			// printf("ptr_buffer[%ld] = %s\n", count_words, ptr_buffer[count_words]);
+    #####:   76:			count_words++;
+        -:   77:		}
+        -:   78:	}
+        -:   79:
+        -:   80:	
+    #####:   81:	return 0;
+        -:   82:}
+        -:   83:
+        -:   84:// do not change ptr_buffer,
+        -:   85:// insert data into HT
+        -:   86:
+        -:   87:#define CREATE 1
+    #####:   88:int insert_elems(char** ptr_buffer, const size_t n_words, HashTable* HT)
+        -:   89:{
+        -:   90:	
+    #####:   91:	size_t i = 0;
+    #####:   92:	if(ptr_buffer == NULL)
+    #####:   93:		return -1;
+        -:   94:
+    #####:   95:	if(*ptr_buffer == NULL)
+    #####:   96:		return -1;
+        -:   97:	
+    #####:   98:	if(HT == NULL)
+    #####:   99:		return -1;
+    #####:  100:	for(i = 0; i < n_words; ++i)
+        -:  101:	{
+        -:  102:		// srand(time(NULL));
+    #####:  103:		lookup(ptr_buffer[i], CREATE, HT);
+        -:  104:	}
+    #####:  105:	return 0;
+        -:  106:}
+        -:  107:
+        -:  108:#undef CREATE
+        -:  109:
+        -:  110:
+    #####:  111:int tests()
+        -:  112:{
+    #####:  113:	mfree(NULL);
+        -:  114:
+        -:  115:
+        -:  116:
+        -:  117:
+    #####:  118:	srand(time(NULL));
+        -:  119:
+        -:  120:	//---------------------------------------------
+        -:  121:
+    #####:  122:	char   filename[] = "docs/data.txt";
+    #####:  123:	int    fd 		  = open_file(filename);
+    #####:  124:	size_t file_size  = sizeof_file(filename);
+        -:  125:
+        -:  126:	// printf("file_size = %ld\n", file_size);
+        -:  127:
+        -:  128:
+    #####:  129:	char* buffer     = (char*)emalloc(file_size);
+    #####:  130:	if(buffer == NULL)
+        -:  131:	{
+    #####:  132:		return -1;
+        -:  133:	}
+        -:  134:
+    #####:  135:	read_file(fd, file_size, buffer);
+        -:  136:
+        -:  137:
+        -:  138:
+    #####:  139:	size_t n_words = count_words(buffer, file_size);
+        -:  140:	// printf("n_words = %ld\n", n_words);
+    #####:  141:	char** ptr_buffer = (char**)emalloc(n_words * sizeof(char*));
+    #####:  142:	put_in_array(buffer, ptr_buffer, file_size);
+        -:  143:	
+        -:  144:
+        -:  145:	// DEBUG_PRINT();
+    #####:  146:	HashTable* HT = NULL;
+    #####:  147:	HT = init_hash_table(NHASH);
+        -:  148:
+    #####:  149:	if(HT == NULL)
+        -:  150:	{
+    #####:  151:		if((close(fd)) < 0)
+        -:  152:		{
+    #####:  153:			perror("close");
+    #####:  154:			return -1;
+        -:  155:		}
+    #####:  156:		mfree(buffer);
+    #####:  157:		mfree(ptr_buffer);
+    #####:  158:		return -1;
+        -:  159:	}	
+        -:  160:	
+        -:  161:	// printf("HT = %p\n", (void*)HT);
+        -:  162:
+        -:  163:	
+    #####:  164:	insert_elems(ptr_buffer, n_words, HT);
+        -:  165:
+        -:  166:	
+        -:  167:
+        -:  168:	// start work with iterators
+        -:  169:	// DEBUG_PRINT();
+    #####:  170:	HashTableIterator * iter = (HashTableIterator *)emalloc(sizeof(*iter));
+        -:  171:	// DEBUG_PRINT();
+    #####:  172:	hash_iterator_fetch(iter, HT);
+        -:  173:
+    #####:  174:	traversal(iter);
+        -:  175:
+    #####:  176:	hash_iterator_delete(iter);
+        -:  177:
+        -:  178:	
+        -:  179:	// NamevalIterator * iter_nv = (NamevalIterator *)emalloc(sizeof(*iter_nv));
+    #####:  180:	NamevalIterator* iter_nv = nv_iterator_construct(HT);
+    #####:  181:	nv_iterator_init_index(HT, iter_nv, 4);
+        -:  182:	
+    #####:  183:	for_each_nameval(iter_nv, stupid_print);
+        -:  184:
+    #####:  185:	nv_iterator_get_size(iter_nv);
+        -:  186:
+        -:  187:	// printf("\n\n\nn = %d\n\n\n", n);
+    #####:  188:	nv_iterator_delete(iter_nv);
+        -:  189:
+        -:  190:	
+        -:  191:
+        -:  192:
+        -:  193:	// end work with iterators
+        -:  194:	
+        -:  195:	
+    #####:  196:	clear_hash_table(HT);
+        -:  197:
+    #####:  198:	if((close(fd)) < 0)
+        -:  199:	{
+    #####:  200:		perror("close");
+    #####:  201:		return -1;
+        -:  202:	}
+    #####:  203:	mfree(buffer);
+    #####:  204:	mfree(ptr_buffer);
+    #####:  205:	return 0;
+        -:  206:}
+        -:  207:
+        -:  208:
+        -:  209:#define TEST_NUMBER (2 << 7)
+        -:  210:
+      512:  211:int unit_tests()
+        -:  212:{
+      512:  213:	mfree(NULL);
+        -:  214:
+        -:  215:
+        -:  216:	//----------------------------
+        -:  217:	// test 2
+        -:  218:	// clear_hash_table
+        -:  219:
+        -:  220:
+      512:  221:	clear_hash_table(NULL);
+        -:  222:
+        -:  223:
+        -:  224:	//------------------------
+        -:  225:	// test 3
+        -:  226:
+        -:  227:	
+      512:  228:	size_t i = 0;
+    51712:  229:	for( i = 0; i < 100; i++)
+        -:  230:	{
+    51200:  231:		HashTable* HT = (HashTable*)emalloc(sizeof(*HT));
+    51200:  232:		mfree(HT);
+        -:  233:	}
+        -:  234:	
+        -:  235:
+        -:  236:	//------------------------
+        -:  237:	// test 4
+        -:  238:
+        -:  239:	
+        -:  240:	// size_t i = 0;
+    51712:  241:	for( i = 0; i < 100; i++)
+        -:  242:	{
+        -:  243:		// printf("i = %ld\n", i);
+    51200:  244:		HashTable* HT = init_hash_table(i);
+    51200:  245:		clear_hash_table(HT);
+        -:  246:		//mfree(HT);
+        -:  247:	}
+        -:  248:	
+        -:  249:	//------------------------
+        -:  250:	// test 5
+        -:  251:	// emalloc size
+        -:  252:	
+      512:  253:	emalloc(0);
+        -:  254:
+        -:  255:	//------------------------
+        -:  256:	// test 6 lookup
+        -:  257:
+      512:  258:	lookup(NULL, 0, NULL);
+        -:  259:
+        -:  260:
+    51712:  261:	for( i = 0; i < 100; i++)
+        -:  262:	{
+    51200:  263:		char* name = (char*)emalloc(10);
+    51200:  264:		if(name == NULL)
+        -:  265:		{
+    #####:  266:			return 0; /// !!!!!
+        -:  267:		}
+    51200:  268:		strncpy(name, "example", 7);
+        -:  269:
+    51200:  270:		HashTable* HT = init_hash_table(100);
+        -:  271:	
+        -:  272:
+    51200:  273:		lookup(name, 1, HT);
+    51200:  274:		mfree(name);
+    51200:  275:		clear_hash_table(HT);
+        -:  276:	}
+        -:  277:
+        -:  278:	//------------------------
+        -:  279:	// test 7 gnu_hash
+      512:  280:	gnu_hash(NULL);
+        -:  281:	
+        -:  282:	//------------------------
+        -:  283:	// test 8 HT iterator fetch
+        -:  284:	{
+      512:  285:		HashTableIterator * iter = (HashTableIterator *)emalloc(sizeof(*iter));
+        -:  286:	}
+      512:  287:	return 0;
+        -:  288:}
+        -:  289:
+        2:  290:int main()
+        -:  291:{
+        -:  292:
+        -:  293:	
+        -:  294:	// tests();
+        -:  295:	/*
+        -:  296:
+        -:  297:	///-------------------------------
+        -:  298:	// test 1
+        -:  299:	// mfree
+        -:  300:
+        -:  301:
+        -:  302:	mfree(NULL);
+        -:  303:
+        -:  304:
+        -:  305:	//----------------------------
+        -:  306:	// test 2
+        -:  307:	// clear_hash_table
+        -:  308:
+        -:  309:
+        -:  310:	clear_hash_table(NULL);
+        -:  311:
+        -:  312:
+        -:  313:	//------------------------
+        -:  314:	// test 3
+        -:  315:
+        -:  316:	
+        -:  317:	size_t i = 0;
+        -:  318:	for( i = 0; i < 100; i++)
+        -:  319:	{
+        -:  320:		HashTable* HT = (HashTable*)emalloc(sizeof(*HT));
+        -:  321:		mfree(HT);
+        -:  322:	}
+        -:  323:	
+        -:  324:
+        -:  325:	//------------------------
+        -:  326:	// test 4
+        -:  327:
+        -:  328:	
+        -:  329:	// size_t i = 0;
+        -:  330:	for( i = 0; i < 100; i++)
+        -:  331:	{
+        -:  332:		// printf("i = %ld\n", i);
+        -:  333:		HashTable* HT = init_hash_table(i);
+        -:  334:		clear_hash_table(HT);
+        -:  335:		//mfree(HT);
+        -:  336:	}
+        -:  337:	
+        -:  338:	//------------------------
+        -:  339:	// test 5
+        -:  340:	// emalloc size
+        -:  341:	
+        -:  342:	emalloc(0);
+        -:  343:
+        -:  344:	//------------------------
+        -:  345:	// test 6 lookup
+        -:  346:
+        -:  347:	lookup(NULL, 0, NULL);
+        -:  348:
+        -:  349:
+        -:  350:	for( i = 0; i < 100; i++)
+        -:  351:	{
+        -:  352:		char* name = (char*)emalloc(10);
+        -:  353:		if(name == NULL)
+        -:  354:		{
+        -:  355:			return 0; /// !!!!!
+        -:  356:		}
+        -:  357:		strncpy(name, "example", 7);
+        -:  358:
+        -:  359:		HashTable* HT = init_hash_table(100);
+        -:  360:	
+        -:  361:
+        -:  362:		lookup(name, 1, HT);
+        -:  363:		mfree(name);
+        -:  364:		clear_hash_table(HT);
+        -:  365:	}
+        -:  366:
+        -:  367:	//------------------------
+        -:  368:	// test 7 gnu_hash
+        -:  369:	gnu_hash(NULL);
+        -:  370:
+        -:  371:
+        -:  372:	*/
+        -:  373:
+        2:  374:	int i = 0;
+      514:  375:	for(; i < TEST_NUMBER; i++)
+        -:  376:	{
+      512:  377:		unit_tests();
+        -:  378:	}
+        -:  379:
+        2:  380:	return 0;
+        -:  381:}
+        -:  382:#undef TEST_NUMBER
